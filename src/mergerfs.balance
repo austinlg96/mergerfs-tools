@@ -122,11 +122,11 @@ def print_args(args):
     print(' '.join(quoted))
 
 
-def build_move_file(src,dst,relfile):
+def build_move_file(src,dst,relfile,custom_rsync_opts: str=''):
     frompath = os.path.join(src,'./',relfile)
     topath   = dst+'/'
     args = ['rsync',
-            '-avlHAXWES',
+            '-avlHAXWES'+custom_rsync_opts,
             '--relative',
             '--progress',
             '--remove-source-files',
@@ -212,6 +212,11 @@ def buildargparser():
                         type=str,
                         default='0',
                         help='exclude files larger than <int>[KMGT] bytes')
+    parser.add_argument('-o',
+                        dest='custom_rsync_opts',
+                        type = str,
+                        default = '',
+                        help='additional options to be fed to rsync (does not accept options with arguments)')
     return parser
 
 
@@ -263,7 +268,7 @@ def main():
                 break
             seen.add(relfilepath)
 
-            args = build_move_file(fromdrive,todrive,relfilepath)
+            args = build_move_file(fromdrive,todrive,relfilepath,custom_rsync_opts=args.custom_rsync_opts)
             print('file: {}\nfrom: {}\nto:   {}'.format(relfilepath,fromdrive,todrive))
             print_args(args)
             rv = execute(args)
